@@ -3,9 +3,16 @@
       id="demo"
       :class="[{'collapsed' : collapsed}, {'onmobile' : isOnMobile}]"
   >
-    <div class="demo">
+    <b-navbar  class="is-dark" :mobile-burger=false>
+      <template slot="brand">
+        <b-navbar-item tag="router-link" :to="{ path: '/' }">
+          <img src="@/assets/logo.png" alt="LDimensions" height="36"/>
+        </b-navbar-item>
+      </template>
+    </b-navbar>
 
-      <router-view />
+    <div class="demo">
+      <router-view/>
 
       <sidebar-menu
           :menu="menu"
@@ -31,82 +38,47 @@ const separator = {
 
 export default {
   name: 'App',
-  data () {
+  data() {
     return {
       menu: [
         {
           header: true,
-          title: 'L4Dimensions',
+          title: 'My Account',
           hiddenOnCollapse: true
+        },
+        {
+          title: 'Products',
+          icon: 'fa fa-star',
+          child: [
+            {
+              href: '/smart-video',
+              title: 'Smart Movie Assistant',
+              icon: 'fa fa-video',
+              badge: {
+                text: 'new',
+                class: 'vsm--badge_default'
+              }
+            },
+
+          ]
         },
         {
           href: '/subscription',
           title: 'Subscription',
-          icon: 'fa fa-download'
+          icon: 'fa fa-dollar-sign'
         },
         {
-          href: '/basic-usage',
-          title: 'Basic Usage',
-          icon: 'fa fa-code'
+          href: '/invoices',
+          title: 'Invoices',
+          icon: 'fa fa-file-invoice'
         },
         {
-          header: true,
-          title: 'Usage',
-          hiddenOnCollapse: true
+          href: '/feedback',
+          title: 'Feedback',
+          icon: 'fa fa-comments'
         },
-        {
-          href: '/props',
-          title: 'Props',
-          icon: 'fa fa-cogs'
-        },
-        {
-          href: '/events',
-          title: 'Events',
-          icon: 'fa fa-bell'
-        },
-        {
-          href: '/styling',
-          title: 'Styling',
-          icon: 'fa fa-palette'
-        },
-        {
-          component: separator
-        },
-        {
-          header: true,
-          title: 'Example',
-          hiddenOnCollapse: true
-        },
-        {
-          href: '/disabled',
-          title: 'Disabled page',
-          icon: 'fa fa-lock',
-          disabled: true
-        },
-        {
-          title: 'Badge',
-          icon: 'fa fa-cog',
-          badge: {
-            text: 'new',
-            class: 'vsm--badge_default'
-          }
-        },
-        {
-          title: 'Dropdown Page',
-          icon: 'fa fa-list-ul',
-          child: [
-            {
-              href: '/page/sub-page-1',
-              title: 'Sub Page 01',
-              icon: 'fa fa-file-alt'
-            },
-            {
-              href: '/page/sub-page-2',
-              title: 'Sub Page 02',
-              icon: 'fa fa-file-alt'
-            }
-          ]
-        }
+
+
       ],
       collapsed: false,
       themes: [
@@ -123,22 +95,22 @@ export default {
       isOnMobile: false
     }
   },
-  mounted () {
+  mounted() {
     this.onResize()
     window.addEventListener('resize', this.onResize)
   },
   methods: {
-    onToggleCollapse (collapsed) {
+    onToggleCollapse(collapsed) {
       console.log(collapsed)
       this.collapsed = collapsed
     },
-    onItemClick () {
+    onItemClick() {
       console.log('onItemClick')
       // console.log(event)
       // console.log(item)
       // console.log(node)
     },
-    onResize () {
+    onResize() {
       if (window.innerWidth <= 767) {
         this.isOnMobile = true
         this.collapsed = true
@@ -171,9 +143,11 @@ body {
   padding-left: 350px;
   transition: 0.3s ease;
 }
+
 #demo.collapsed {
   padding-left: 50px;
 }
+
 #demo.onmobile {
   padding-left: 50px;
 }
@@ -206,4 +180,5 @@ pre {
   line-height: 1.5;
   overflow: auto;
 }
+
 </style>

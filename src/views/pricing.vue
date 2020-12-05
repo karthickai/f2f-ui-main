@@ -1,67 +1,112 @@
 <template>
-  <div>
-    <div class="pricing-table">
-      <div class="pricing-plan">
-        <div class="plan-header">Starter</div>
-        <div class="plan-price"><span class="plan-price-amount"><span class="plan-price-currency">$</span>20</span>/month</div>
-        <div class="plan-items">
-          <div class="plan-item">20GB Storage</div>
-          <div class="plan-item">100 Domains</div>
-          <div class="plan-item">-</div>
-          <div class="plan-item">-</div>
-        </div>
-        <div class="plan-footer">
-          <button class="button is-fullwidth" disabled="disabled">Current plan</button>
-        </div>
-      </div>
+  <div class="section">
+    <div class="container">
+      <div class="column">
+        <div class="box">
+          <div class="has-text-centered">
+            <h1 class="title is-1 mb-6"> Pricing </h1>
+          </div>
+          <div class="pricing-table">
+            <div class="pricing-plan is-warning">
+              <div class="plan-header">Free Trail</div>
+              <div class="plan-price"><span class="plan-price-amount"><span class="plan-price-currency">$</span>0</span>/month
+              </div>
+              <div class="plan-items">
+                <div class="plan-item">3 hours</div>
+                <div class="plan-item">7 days validity</div>
+                <div class="plan-item">-</div>
+              </div>
+              <div v-if="noTrail" class="plan-footer">
+                <button class="button is-fullwidth" @click="trail">Choose</button>
+              </div>
+            </div>
 
-      <div class="pricing-plan is-warning">
-        <div class="plan-header">Startups</div>
-        <div class="plan-price"><span class="plan-price-amount"><span class="plan-price-currency">$</span>40</span>/month</div>
-        <div class="plan-items">
-          <div class="plan-item">20GB Storage</div>
-          <div class="plan-item">25 Domains</div>
-          <div class="plan-item">1TB Bandwidth</div>
-          <div class="plan-item">-</div>
-        </div>
-        <div class="plan-footer">
-          <button class="button is-fullwidth">Choose</button>
-        </div>
-      </div>
+            <div class="pricing-plan is-active">
+              <div class="plan-header">Family Pack</div>
+              <div class="plan-price"><span class="plan-price-amount"><span
+                  class="plan-price-currency">$</span>10</span>/month
+              </div>
+              <div class="plan-items">
+                <div class="plan-item">60 hours</div>
+                <div class="plan-item">30 days Validity</div>
+                <div class="plan-item">Customer Support</div>
+              </div>
+              <stripe-checkout
+                  ref="checkoutRef"
+                  :pk="publishableKey"
+                  :items="items"
+                  :successUrl="successUrl"
+                  :cancelUrl="cancelUrl"
+              >
+                <template slot="checkout-button">
+                  <div v-if="noSubscribed" class="plan-footer">
+                    <button class="button is-fullwidth" @click="checkout">Choose</button>
+                  </div>
+                </template>
+              </stripe-checkout>
 
-      <div class="pricing-plan is-active">
-        <div class="plan-header">Growing Team</div>
-        <div class="plan-price"><span class="plan-price-amount"><span class="plan-price-currency">$</span>60</span>/month</div>
-        <div class="plan-items">
-          <div class="plan-item">200GB Storage</div>
-          <div class="plan-item">50 Domains</div>
-          <div class="plan-item">1TB Bandwidth</div>
-          <div class="plan-item">100 Email Boxes</div>
+            </div>
+          </div>
         </div>
-        <div class="plan-footer">
-          <button class="button is-fullwidth">Choose</button>
-        </div>
-      </div>
 
-      <div class="pricing-plan is-danger">
-        <div class="plan-header">Enterprise</div>
-        <div class="plan-price"><span class="plan-price-amount"><span class="plan-price-currency">$</span>100</span>/month</div>
-        <div class="plan-items">
-          <div class="plan-item">2TB Storage</div>
-          <div class="plan-item">100 Domains</div>
-          <div class="plan-item">1TB Bandwidth</div>
-          <div class="plan-item">1000 Email Boxes</div>
-        </div>
-        <div class="plan-footer">
-          <button class="button is-fullwidth">Choose</button>
-        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-export default {};
+import UserService from "@/http/user-service";
+import {SnackbarProgrammatic as Snackbar} from "buefy";
+import {StripeCheckout} from 'vue-stripe-checkout';
+
+export default {
+  components: {
+    StripeCheckout
+  },
+  data() {
+    return {
+      noTrail: !this.$store.state.auth.user['has_trail_ended'],
+      noSubscribed: !this.$store.state.auth.user['subscription_status'],
+      loading: false,
+      publishableKey: "pk_test_51HtbqBDbq61XtTMumFRzwnKyqSh6KWQjNGrgG3aWlpz6trnOZJxiBPsTCtbHT2j8uPivrNlZcoFDe9QWC9TuvKHo00khYibIEC",
+      items: [
+        {
+          plan: 'price_1Hv7dBDbq61XtTMulRSiu6L9',
+          quantity: 1
+        }
+      ],
+      successUrl: 'http://localhost:8080/',
+      cancelUrl: 'http://localhost:8080/pricing',
+    }
+  },
+  methods: {
+    checkout() {
+      this.$refs.checkoutRef.redirectToCheckout();
+    },
+    trail() {
+      let loader = this.$loading.show({
+        // Optional parameters
+        container: false,
+      });
+      UserService.CreateFreeTrail().then(
+          () => {
+            loader.hide()
+            Snackbar.open('Your 7 Days Trial Activated')
+            this.noTrail = false
+          },
+          error => {
+            loader.hide()
+            this.message =
+                (error.response && error.response.data && error.response.data.message) ||
+                error.message ||
+                error.toString();
+            Snackbar.open("Unable to activate your trial")
+
+          }
+      );
+    }
+  }
+};
 </script>
 
 <style lang="sass">

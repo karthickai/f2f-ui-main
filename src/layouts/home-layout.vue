@@ -29,7 +29,7 @@
           </div>
         </b-navbar-item>
         <b-navbar-dropdown v-if="$store.state.auth.user" :label="$store.state.auth.user.email">
-          <b-navbar-item href="/settings"> Settings</b-navbar-item>
+          <b-navbar-item href="/subscription"> My Account</b-navbar-item>
           <b-navbar-item @click="logOut"> Logout</b-navbar-item>
         </b-navbar-dropdown>
       </template>
