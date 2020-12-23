@@ -32,11 +32,10 @@
                 <div class="plan-item">Customer Support</div>
               </div>
               <stripe-checkout
+                  v-if="!status"
                   ref="checkoutRef"
                   :pk="publishableKey"
-                  :items="items"
-                  :successUrl="successUrl"
-                  :cancelUrl="cancelUrl"
+                  :session-id="sessionID"
               >
                 <template slot="checkout-button">
                   <div v-if="noSubscribed" class="plan-footer">
@@ -60,28 +59,61 @@ import {SnackbarProgrammatic as Snackbar} from "buefy";
 import {StripeCheckout} from 'vue-stripe-checkout';
 
 export default {
+  created() {
+    let loader = this.$loading.show({
+      // Optional parameters
+    });
+    UserService.getUserDetails().then(
+        response => {
+          loader.hide()
+          console.log(response.data)
+          this.status = response.data['subscription']['status'] === "active"
+        },
+        error => {
+          loader.hide()
+          this.message =
+              (error.response && error.response.data && error.response.data.message) ||
+              error.message ||
+              error.toString();
+        }
+    );
+  },
   components: {
     StripeCheckout
   },
   data() {
     return {
+      status: false,
+      sessionID: "",
       noTrail: !this.$store.state.auth.user['has_trail_ended'],
       noSubscribed: !this.$store.state.auth.user['subscription_status'],
       loading: false,
       publishableKey: "pk_test_51HtbqBDbq61XtTMumFRzwnKyqSh6KWQjNGrgG3aWlpz6trnOZJxiBPsTCtbHT2j8uPivrNlZcoFDe9QWC9TuvKHo00khYibIEC",
-      items: [
-        {
-          plan: 'price_1Hv7dBDbq61XtTMulRSiu6L9',
-          quantity: 1
-        }
-      ],
-      successUrl: 'http://localhost:8080/',
-      cancelUrl: 'http://localhost:8080/pricing',
+
     }
   },
   methods: {
     checkout() {
-      this.$refs.checkoutRef.redirectToCheckout();
+      let loader = this.$loading.show({
+        // Optional parameters
+        container: false,
+      });
+      UserService.getCheckoutSessionID().then(
+          (data) => {
+            loader.hide()
+            this.sessionID = data["data"]["id"]
+            this.$refs.checkoutRef.redirectToCheckout();
+          },
+          error => {
+            loader.hide()
+            this.message =
+                (error.response && error.response.data && error.response.data.message) ||
+                error.message ||
+                error.toString();
+            Snackbar.open("Unable to process your purchase")
+
+          }
+      );
     },
     trail() {
       let loader = this.$loading.show({
