@@ -80,7 +80,29 @@
         </div>
       </div>
       <div class="column is-two-thirds">
-        <b-table :data="data" :columns="columns"></b-table>
+        <b-table :data="processedMovies">
+          <b-table-column field="movie_name" label="Movie Name" v-slot="props">
+            {{ props.row.movie_name }}
+          </b-table-column>
+
+          <b-table-column field="status" label="Status" v-slot="props">
+            {{ props.row.status }}
+          </b-table-column>
+
+          <b-table-column field="uploaded_at" label="Uploaded At" v-slot="props">
+            <span class="tag is-success">
+                {{ epochToDate(parseInt(props.row.uploaded_at))}}
+            </span>
+          </b-table-column>
+
+          <b-table-column field="download_url" label="Download" v-slot="props">
+            <b-button class="is-primary is-light is-small" icon-left="download" @click="btnClick(props.row.download_url)">
+              Download
+            </b-button>
+          </b-table-column>
+
+
+        </b-table>
 
       </div>
     </div>
@@ -102,14 +124,14 @@ export default {
       user: null,
       totalProcessedMovies: 0,
       totalProcessingMovies: 0,
+      processedMovies: null,
       request: null,
       dropFiles: "",
       isUpload: false,
       uploading: false,
       value: 0,
       url: "",
-      data: [
-      ],
+      // data: [],
       columns: [
         {
           field: 'id',
@@ -144,7 +166,15 @@ export default {
     }
   },
   methods: {
-    updateUser(){
+    epochToDate(epoch){
+      let start = new Date(0); // The 0 there is the key, which sets the date to the epoch
+      start.setUTCSeconds(epoch);
+      return start.toLocaleDateString()
+    },
+    btnClick(movie) {
+      window.open(movie);
+    },
+    updateUser() {
       let loader = this.$loading.show({
         // Optional parameters
       });
@@ -155,10 +185,13 @@ export default {
             this.user = response.data
             if (response.data["f2f_product"]["processed_movies"] !== null) {
               this.totalProcessedMovies = response.data["f2f_product"]["processed_movies"].length
+              this.processedMovies = response.data["f2f_product"]["processed_movies"]
+
             }
             if (response.data["f2f_product"]["processing_movies"] !== null) {
               this.totalProcessingMovies = response.data["f2f_product"]["processing_movies"].length
             }
+
             // this.status = response.data['subscription']['status'] === "active"
           },
           error => {
@@ -236,7 +269,7 @@ export default {
     },
 
 
-    uploadSucceed(){
+    uploadSucceed() {
       let loader = this.$loading.show({
         // Optional parameters
       });
